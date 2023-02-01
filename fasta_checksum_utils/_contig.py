@@ -23,4 +23,8 @@ async def checksum_contig(fh: pysam.FastaFile, contig_name: str, algorithms: Tup
                 .encode("ascii")
             )
 
-    return tuple(await a.checksum_sequence(gen_sequence()) for a in algorithms)
+    r = []
+    for a in algorithms:
+        r.append(await a.checksum_sequence(gen_sequence()))
+
+    return tuple(r)
