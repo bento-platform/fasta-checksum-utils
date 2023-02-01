@@ -15,14 +15,27 @@ DEFAULT_CHUNK_SIZE = 16 * 1024  # 16 KB
 DEFAULT_TRUNC512_OFFSET = 24
 
 
-class ChecksumAlgorithm(ABC):
-    def __init__(self):
-        pass
+class ChecksumAlgorithm(type):
+    # https://stackoverflow.com/questions/13762231/how-to-pass-arguments-to-the-metaclass-from-the-class-definition
+
+    @classmethod
+    def __prepare__(mcs, name, bases, **kwargs):
+        return super().__prepare__(name, bases, **kwargs)
+
+    def __new__(mcs, name, bases, namespace, **kwargs):
+        return super().__new__(mcs, name, bases, namespace)
+
+    def __init__(cls, name, bases, namespace, algorithm_name=""):
+        super().__init__(name, bases, namespace)
+        cls.algorithm_name = algorithm_name
+
+    def __str__(self):
+        return self.algorithm_name
 
     @staticmethod
     async def update_hash_from_file(h, file: Path, chunk_size: int):
         async with aiofiles.open(file, "rb") as fh:
-            while data := fh.read(chunk_size):
+            while data := (await fh.read(chunk_size)):
                 h.update(data)
         return h
 
@@ -34,26 +47,28 @@ class ChecksumAlgorithm(ABC):
 
     @classmethod
     @abstractmethod
-    async def checksum_file(cls, file: Path, chunk_size: int = DEFAULT_CHUNK_SIZE, **kwargs) -> str:
+    async def checksum_file(mcs, file: Path, chunk_size: int = DEFAULT_CHUNK_SIZE, **kwargs) -> str:
         pass
 
     @classmethod
     @abstractmethod
-    async def checksum_sequence(cls, sequence: Generator[bytes, None, None]) -> str:
+    async def checksum_sequence(mcs, sequence: Generator[bytes, None, None]) -> str:
         pass
 
 
-class AlgorithmMD5(ChecksumAlgorithm):
-    @classmethod
-    async def checksum_file(cls, file: Path, chunk_size: int = DEFAULT_CHUNK_SIZE, **kwargs) -> str:
-        return (await cls.update_hash_from_file(hashlib.md5(), file, chunk_size)).hexdigest()
+class AlgorithmMD5(metaclass=ChecksumAlgorithm, algorithm_name="MD5"):
 
     @classmethod
-    async def checksum_sequence(cls, sequence: Generator[bytes, None, None], **kwargs) -> str:
-        return cls.update_hash_from_sequence(hashlib.md5(), sequence).hexdigest()
+    async def checksum_file(cls, file: Path, chunk_size: int = DEFAULT_CHUNK_SIZE, **_kwargs) -> str:
+        return (await ChecksumAlgorithm.update_hash_from_file(hashlib.md5(), file, chunk_size)).hexdigest()
+
+    @classmethod
+    async def checksum_sequence(cls, sequence: Generator[bytes, None, None], **_kwargs) -> str:
+        return ChecksumAlgorithm.update_hash_from_sequence(hashlib.md5(), sequence).hexdigest()
 
 
-class AlgorithmTRUNC512(ChecksumAlgorithm):
+class AlgorithmTRUNC512(metaclass=ChecksumAlgorithm, algorithm_name="TRUNC512"):
+
     @staticmethod
     def _trunc512_of_hash(h, offset: int) -> str:
         return binascii.hexlify(h.digest()[:offset]).decode("ascii")
@@ -62,12 +77,12 @@ class AlgorithmTRUNC512(ChecksumAlgorithm):
     async def checksum_file(cls, file: Path, chunk_size: int = DEFAULT_CHUNK_SIZE, **kwargs) -> str:
         return cls._trunc512_of_hash(
             h=await cls.update_hash_from_file(hashlib.sha512(), file, chunk_size),
-            offset=kwargs.pop("offset", DEFAULT_CHUNK_SIZE),
+            offset=kwargs.pop("offset", DEFAULT_TRUNC512_OFFSET),
         )
 
     @classmethod
     async def checksum_sequence(cls, sequence: Generator[bytes, None, None], **kwargs) -> str:
         return cls._trunc512_of_hash(
             h=cls.update_hash_from_sequence(hashlib.sha512(), sequence),
-            offset=kwargs.pop("offset", DEFAULT_CHUNK_SIZE),
+            offset=kwargs.pop("offset", DEFAULT_TRUNC512_OFFSET),
         )
