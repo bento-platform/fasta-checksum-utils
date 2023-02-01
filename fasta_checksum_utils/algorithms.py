@@ -1,7 +1,7 @@
 import aiofiles
 import binascii
 import hashlib
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from pathlib import Path
 from typing import Generator
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, Generator, Tuple
 
 from .algorithms import ChecksumAlgorithm
-from .file import checksum_file
+from ._file import checksum_file
 
 
 class FastaReport:
