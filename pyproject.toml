@@ -7,6 +7,9 @@ license = "LGPL-3.0"
 readme = "README.md"
 packages = [{include = "fasta_checksum_utils"}]
 
+[tool.poetry.scripts]
+fasta-checksum-utils = "fasta_checksum_utils.entry:entry"
+
 [tool.poetry.dependencies]
 python = "^3.8"
 pysam = "^0.20.0"

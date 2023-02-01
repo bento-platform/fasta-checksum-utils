@@ -1,8 +1,10 @@
 import argparse
 import asyncio
+
+from pathlib import Path
+
 from .algorithms import AlgorithmMD5, AlgorithmTRUNC512
 from .fasta import fasta_report
-from pathlib import Path
 
 
 async def main():
@@ -25,5 +27,9 @@ async def main():
         print(report.as_text_report())
 
 
-if __name__ == "__main__":
+def entry():
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    entry()
