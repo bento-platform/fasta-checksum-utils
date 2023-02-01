@@ -12,9 +12,11 @@ class FastaReport:
     def __init__(
         self,
         file_checksums: Dict[ChecksumAlgorithm, str],
+        file_size: int,
         sequence_checksums_and_lengths: Dict[str, Tuple[Dict[ChecksumAlgorithm, str], int]],
     ):
         self._file_checksums = file_checksums
+        self._file_size: int = file_size
         self._sequence_checksums_and_lengths = sequence_checksums_and_lengths
 
     def as_bento_json(self) -> str:
@@ -23,6 +25,7 @@ class FastaReport:
 
         return json.dumps({
             **_checksum_dict(self._file_checksums),
+            "fasta_size": self._file_size,
             "contigs": [
                 {
                     "name": contig,
@@ -36,7 +39,7 @@ class FastaReport:
     def as_text_report(self) -> str:
         text_report = ""
 
-        text_report += "file"
+        text_report += f"file\t{self._file_size}"
         for algorithm, checksum in self._file_checksums.items():
             text_report += f"\t{algorithm}\t{checksum}"
         text_report += "\n"
@@ -53,6 +56,8 @@ SEQUENCE_CHUNK_SIZE = 16 * 1024  # 16 KB of bases at a time
 
 
 async def fasta_report(file: Path, algorithms: Tuple[ChecksumAlgorithm, ...]) -> FastaReport:
+    file_size = file.stat().st_size
+
     # Calculate whole-file checksums
 
     fcs = await checksum_file(file, algorithms)
@@ -84,4 +89,4 @@ async def fasta_report(file: Path, algorithms: Tuple[ChecksumAlgorithm, ...]) ->
         fh.close()
 
     # Generate and return a final report
-    return FastaReport(file_checksums, sequence_checksums_and_lengths)
+    return FastaReport(file_checksums, file_size, sequence_checksums_and_lengths)
