@@ -1,9 +1,10 @@
 import json
 import pysam
 from pathlib import Path
-from typing import Dict, Generator, Tuple
+from typing import Dict, Tuple
 
 from .algorithms import ChecksumAlgorithm
+from ._contig import checksum_contig
 from ._file import checksum_file
 
 
@@ -52,9 +53,6 @@ class FastaReport:
         return text_report
 
 
-SEQUENCE_CHUNK_SIZE = 16 * 1024  # 16 KB of bases at a time
-
-
 async def fasta_report(file: Path, algorithms: Tuple[ChecksumAlgorithm, ...]) -> FastaReport:
     file_size = file.stat().st_size
 
@@ -70,20 +68,13 @@ async def fasta_report(file: Path, algorithms: Tuple[ChecksumAlgorithm, ...]) ->
 
     try:
         for sequence_name in fh.references:
-            sequence_length: int = fh.get_reference_length(sequence_name)
-
-            def gen_sequence() -> Generator[bytes, None, None]:
-                for offset in range(0, sequence_length, SEQUENCE_CHUNK_SIZE):
-                    yield (
-                        fh
-                        .fetch(sequence_name, offset, min(offset + SEQUENCE_CHUNK_SIZE, sequence_length))
-                        .encode("ascii")
-                    )
-
-            sequence_checksums_and_lengths[sequence_name] = ({
-                a: await a.checksum_sequence(gen_sequence())
-                for a in algorithms
-            }, sequence_length)
+            sequence_checksums_and_lengths[sequence_name] = (
+                {a: c for a, c in zip(
+                    algorithms,
+                    await checksum_contig(fh, sequence_name, algorithms),
+                )},
+                fh.get_reference_length(sequence_name),
+            )
 
     finally:
         fh.close()

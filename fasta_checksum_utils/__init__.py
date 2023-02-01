@@ -1,5 +1,6 @@
 from importlib import metadata
 from . import algorithms, fasta
+from ._contig import checksum_contig
 from ._file import checksum_file
 
 __all__ = [
@@ -11,6 +12,7 @@ __all__ = [
     "fasta",
 
     # module methods
+    "checksum_contig",
     "checksum_file",
 ]
 
