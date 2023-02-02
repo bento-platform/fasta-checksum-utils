@@ -9,7 +9,7 @@ __all__ = [
 ]
 
 
-SEQUENCE_CHUNK_SIZE = 16 * 1024  # 16 KB of bases at a time
+SEQUENCE_CHUNK_SIZE = 128 * 1024  # 128 KB of bases at a time
 
 
 async def checksum_contig(fh: pysam.FastaFile, contig_name: str, algorithms: Tuple[ChecksumAlgorithm, ...]):
