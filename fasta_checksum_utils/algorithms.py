@@ -47,12 +47,12 @@ class ChecksumAlgorithm(type):
 
     @classmethod
     @abstractmethod
-    async def checksum_file(mcs, file: Path, chunk_size: int = DEFAULT_CHUNK_SIZE, **kwargs) -> str:
+    async def checksum_file(mcs, file: Path, chunk_size: int = DEFAULT_CHUNK_SIZE, **kwargs) -> str:  # pragma: no cover
         pass
 
     @classmethod
     @abstractmethod
-    async def checksum_sequence(mcs, sequence: Generator[bytes, None, None]) -> str:
+    async def checksum_sequence(mcs, sequence: Generator[bytes, None, None]) -> str:  # pragma: no cover
         pass
 
 
