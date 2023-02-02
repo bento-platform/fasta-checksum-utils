@@ -24,7 +24,7 @@ async def main():
     if args.out_format == "bento-json":
         print(report.as_bento_json())
     else:
-        print(report.as_text_report())
+        print(report.as_text_report(), end="")
 
 
 def entry():

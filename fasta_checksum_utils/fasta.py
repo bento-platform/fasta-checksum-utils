@@ -49,6 +49,7 @@ class FastaReport:
             text_report += f"{sequence_name}\t{length}"
             for algorithm, checksum in checksums.items():
                 text_report += f"\t{algorithm}\t{checksum}"
+            text_report += "\n"
 
         return text_report
 
