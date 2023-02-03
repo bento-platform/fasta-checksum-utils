@@ -1,4 +1,5 @@
 .idea/
+dist/
 env/
 __pycache__
 /*.fa
