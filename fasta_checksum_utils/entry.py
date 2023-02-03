@@ -3,6 +3,7 @@ import asyncio
 
 from pathlib import Path
 
+from . import __version__
 from .algorithms import AlgorithmMD5, AlgorithmTRUNC512
 from .fasta import fasta_report
 
@@ -12,6 +13,8 @@ async def main():
         prog="fasta-checksum-utils",
         description="A library and command-line utility for checksumming FASTA files and individual contigs.",
     )
+
+    parser.add_argument('--version', action="version", version=__version__)
 
     parser.add_argument("fasta", type=Path, help="A FASTA file to checksum.")
     parser.add_argument(
