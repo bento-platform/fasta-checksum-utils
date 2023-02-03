@@ -1,7 +1,7 @@
 import json
 import pysam
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 
 from .algorithms import ChecksumAlgorithm
 from ._contig import checksum_contig
@@ -20,11 +20,12 @@ class FastaReport:
         self._file_size: int = file_size
         self._sequence_checksums_and_lengths = sequence_checksums_and_lengths
 
-    def as_bento_json(self) -> str:
+    def as_bento_json(self, genome_id: Union[str, None] = None) -> str:
         def _checksum_dict(cs: Dict[ChecksumAlgorithm, str]) -> Dict[str, str]:
             return {str(algorithm).lower(): checksum for algorithm, checksum in cs.items()}
 
         return json.dumps({
+            **({"id": genome_id} if genome_id else {}),
             **_checksum_dict(self._file_checksums),
             "fasta_size": self._file_size,
             "contigs": [

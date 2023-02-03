@@ -39,6 +39,9 @@ async def test_fasta_report():
     text_report_lines = text_report.split("\n")
     assert len(text_report_lines) == 4  # file + 2 contigs + trailing line
 
+    json_report = report.as_bento_json(genome_id="hello")
+    assert json.loads(json_report)["id"] == "hello"
+
     json_report = report.as_bento_json()
     json_data = json.loads(json_report)
 
