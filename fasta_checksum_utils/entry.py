@@ -4,7 +4,7 @@ import asyncio
 from pathlib import Path
 
 from . import __version__
-from .algorithms import AlgorithmMD5, AlgorithmTRUNC512
+from .algorithms import AlgorithmMD5, AlgorithmGA4GH
 from .fasta import fasta_report
 
 
@@ -24,7 +24,7 @@ async def main():
 
     args = parser.parse_args()
 
-    report = await fasta_report(args.fasta, (AlgorithmMD5, AlgorithmTRUNC512))
+    report = await fasta_report(args.fasta, (AlgorithmMD5, AlgorithmGA4GH))
     if args.out_format == "bento-json":
         print(report.as_bento_json(genome_id=getattr(args, "genome_id", None)))
     else:
