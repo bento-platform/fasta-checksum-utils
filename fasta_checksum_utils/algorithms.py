@@ -1,5 +1,5 @@
 import aiofiles
-import binascii
+import base64
 import hashlib
 from abc import abstractmethod
 from pathlib import Path
@@ -8,11 +8,11 @@ from typing import Generator
 __all__ = [
     "ChecksumAlgorithm",
     "AlgorithmMD5",
-    "AlgorithmTRUNC512",
+    "AlgorithmGA4GH",
 ]
 
 DEFAULT_CHUNK_SIZE = 128 * 1024  # 128 KB
-DEFAULT_TRUNC512_OFFSET = 24
+DEFAULT_GA4GH_OFFSET = 24
 
 
 class ChecksumAlgorithm(type):
@@ -56,7 +56,7 @@ class ChecksumAlgorithm(type):
         pass
 
 
-class AlgorithmMD5(metaclass=ChecksumAlgorithm, algorithm_name="MD5"):
+class AlgorithmMD5(metaclass=ChecksumAlgorithm, algorithm_name="md5"):
 
     @classmethod
     async def checksum_file(cls, file: Path, chunk_size: int = DEFAULT_CHUNK_SIZE, **_kwargs) -> str:
@@ -67,22 +67,23 @@ class AlgorithmMD5(metaclass=ChecksumAlgorithm, algorithm_name="MD5"):
         return ChecksumAlgorithm.update_hash_from_sequence(hashlib.md5(), sequence).hexdigest()
 
 
-class AlgorithmTRUNC512(metaclass=ChecksumAlgorithm, algorithm_name="TRUNC512"):
+class AlgorithmGA4GH(metaclass=ChecksumAlgorithm, algorithm_name="ga4gh"):
 
     @staticmethod
-    def _trunc512_of_hash(h, offset: int) -> str:
-        return binascii.hexlify(h.digest()[:offset]).decode("ascii")
+    def _ga4gh_of_hash(h, offset: int) -> str:
+        b64_enc = base64.urlsafe_b64encode(h.digest()[:offset]).decode("ascii")
+        return f"SQ.{b64_enc}"
 
     @classmethod
-    async def checksum_file(cls, file: Path, chunk_size: int = DEFAULT_CHUNK_SIZE, **kwargs) -> str:
-        return cls._trunc512_of_hash(
+    async def checksum_file(cls, file: Path, chunk_size: int = DEFAULT_CHUNK_SIZE, **kwargs):
+        return cls._ga4gh_of_hash(
             h=await cls.update_hash_from_file(hashlib.sha512(), file, chunk_size),
-            offset=kwargs.pop("offset", DEFAULT_TRUNC512_OFFSET),
+            offset=kwargs.pop("offset", DEFAULT_GA4GH_OFFSET),
         )
 
     @classmethod
     async def checksum_sequence(cls, sequence: Generator[bytes, None, None], **kwargs) -> str:
-        return cls._trunc512_of_hash(
+        return cls._ga4gh_of_hash(
             h=cls.update_hash_from_sequence(hashlib.sha512(), sequence),
-            offset=kwargs.pop("offset", DEFAULT_TRUNC512_OFFSET),
+            offset=kwargs.pop("offset", DEFAULT_GA4GH_OFFSET),
         )
