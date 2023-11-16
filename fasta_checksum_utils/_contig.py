@@ -1,3 +1,4 @@
+import asyncio
 import pysam
 from typing import Generator
 from .algorithms import ChecksumAlgorithm
@@ -23,8 +24,4 @@ async def checksum_contig(fh: pysam.FastaFile, contig_name: str, algorithms: tup
                 .encode("ascii")
             )
 
-    r = []
-    for a in algorithms:
-        r.append(await a.checksum_sequence(gen_sequence()))
-
-    return tuple(r)
+    return tuple(await asyncio.gather(*(a.checksum_sequence(gen_sequence()) for a in algorithms)))
