@@ -1,7 +1,7 @@
 import json
 import pysam
 from pathlib import Path
-from typing import Dict, Tuple, Union
+from typing import Union
 
 from .algorithms import ChecksumAlgorithm
 from ._contig import checksum_contig
@@ -12,16 +12,16 @@ class FastaReport:
 
     def __init__(
         self,
-        file_checksums: Dict[ChecksumAlgorithm, str],
+        file_checksums: dict[ChecksumAlgorithm, str],
         file_size: int,
-        sequence_checksums_and_lengths: Dict[str, Tuple[Dict[ChecksumAlgorithm, str], int]],
+        sequence_checksums_and_lengths: dict[str, tuple[dict[ChecksumAlgorithm, str], int]],
     ):
         self._file_checksums = file_checksums
         self._file_size: int = file_size
         self._sequence_checksums_and_lengths = sequence_checksums_and_lengths
 
     def as_bento_json(self, genome_id: Union[str, None] = None) -> str:
-        def _checksum_dict(cs: Dict[ChecksumAlgorithm, str]) -> Dict[str, str]:
+        def _checksum_dict(cs: dict[ChecksumAlgorithm, str]) -> dict[str, str]:
             return {str(algorithm).lower(): checksum for algorithm, checksum in cs.items()}
 
         return json.dumps({
@@ -55,7 +55,7 @@ class FastaReport:
         return text_report
 
 
-async def fasta_report(file: Path, algorithms: Tuple[ChecksumAlgorithm, ...]) -> FastaReport:
+async def fasta_report(file: Path, algorithms: tuple[ChecksumAlgorithm, ...]) -> FastaReport:
     file_size = file.stat().st_size
 
     # Calculate whole-file checksums
@@ -66,7 +66,7 @@ async def fasta_report(file: Path, algorithms: Tuple[ChecksumAlgorithm, ...]) ->
     # Calculate sequence content checksums
 
     fh = pysam.FastaFile(str(file))
-    sequence_checksums_and_lengths: Dict[str, Tuple[Dict[ChecksumAlgorithm, str], int]] = {}
+    sequence_checksums_and_lengths: dict[str, tuple[dict[ChecksumAlgorithm, str], int]] = {}
 
     try:
         for sequence_name in fh.references:
