@@ -1,6 +1,8 @@
 # fasta-checksum-utils
 
 Asynchronous library and command-line utility for checksumming FASTA files and individual contigs.
+Implements two checksumming algorithms: `MD5` and `GA4GH`, in order to fulfill the needs of the 
+[Refget v2](http://samtools.github.io/hts-specs/refget.html) API specification.
 
 
 ## Installation
