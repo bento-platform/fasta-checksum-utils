@@ -8,6 +8,10 @@ from fasta_checksum_utils.fasta import fasta_report
 
 
 EXAMPLE_FASTA = pathlib.Path(__file__).parent / "data" / "example.fa"
+EXAMPLE_FAI = pathlib.Path(__file__).parent / "data" / "example.fa.fai"
+
+REF_MITO_URL = "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/chrM.fa.gz"
+
 TESTED_ALGORITHMS = (AlgorithmMD5, AlgorithmGA4GH)
 
 
@@ -33,17 +37,19 @@ async def test_contig_checksums():
 
 @pytest.mark.asyncio
 async def test_fasta_report():
-    report = await fasta_report(EXAMPLE_FASTA, TESTED_ALGORITHMS)
+    report = await fasta_report(EXAMPLE_FASTA, EXAMPLE_FAI, TESTED_ALGORITHMS)
 
-    text_report = report.as_text_report()  # just make sure this doesn't work
+    text_report = report.as_text_report()  # just make sure this doesn't break
     text_report_lines = text_report.split("\n")
     assert len(text_report_lines) == 4  # file + 2 contigs + trailing line
 
     json_report = report.as_bento_json(genome_id="hello")
-    assert json.loads(json_report)["id"] == "hello"
-
-    json_report = report.as_bento_json()
     json_data = json.loads(json_report)
+
+    assert json_data["id"] == "hello"
+
+    assert json_data["fasta"] == str(EXAMPLE_FASTA)
+    assert json_data["fai"] == str(EXAMPLE_FAI)
 
     # file checksums
     assert json_data["md5"] == "3cc31e8136477d1c7d7e2b7c050c06bd"
@@ -55,3 +61,12 @@ async def test_fasta_report():
     assert json_data["contigs"][0]["ga4gh"] == "SQ.oTteVImewK0_Z6cUA2c7QUb5YaAq8Hg9"
     assert json_data["contigs"][0]["length"] == 33
     assert json_data["contigs"][1]["length"] == 28
+
+
+@pytest.mark.asyncio
+async def test_fasta_report_http():
+    report = await fasta_report(REF_MITO_URL, None, TESTED_ALGORITHMS)
+
+    text_report = report.as_text_report()  # just make sure this doesn't break
+    text_report_lines = text_report.split("\n")
+    assert len(text_report_lines) == 3  # file + 1 contig + trailing line

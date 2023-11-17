@@ -14,6 +14,7 @@ fasta-checksum-utils = "fasta_checksum_utils.entry:entry"
 python = "^3.9.1"
 pysam = "^0.22.0"
 aiofiles = "^23.2.1"
+aiohttp = "^3.8.6"
 
 
 [tool.poetry.group.dev.dependencies]

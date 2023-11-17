@@ -1,8 +1,6 @@
 import argparse
 import asyncio
 
-from pathlib import Path
-
 from . import __version__
 from .algorithms import AlgorithmMD5, AlgorithmGA4GH
 from .fasta import fasta_report
@@ -16,7 +14,8 @@ async def main():
 
     parser.add_argument('--version', action="version", version=__version__)
 
-    parser.add_argument("fasta", type=Path, help="A FASTA file to checksum.")
+    parser.add_argument("fasta", type=str, help="A FASTA path or URI to checksum.")
+    parser.add_argument("--fai", type=str, help="A FASTA FAI index path or URI, if available.")
     parser.add_argument("--genome-id", type=str, help="Genome ID to include, if --out-format is set to bento-json.")
     parser.add_argument(
         "--out-format", type=str, default="text", choices=("text", "bento-json"),
@@ -24,7 +23,7 @@ async def main():
 
     args = parser.parse_args()
 
-    report = await fasta_report(args.fasta, (AlgorithmMD5, AlgorithmGA4GH))
+    report = await fasta_report(args.fasta, args.fai, (AlgorithmMD5, AlgorithmGA4GH))
     if args.out_format == "bento-json":
         print(report.as_bento_json(genome_id=getattr(args, "genome_id", None)))
     else:
