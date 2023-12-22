@@ -21,6 +21,7 @@ async def checksum_contig(fh: pysam.FastaFile, contig_name: str, algorithms: tup
             yield (
                 fh
                 .fetch(contig_name, offset, min(offset + SEQUENCE_CHUNK_SIZE, contig_length))
+                .upper()  # See http://samtools.github.io/hts-specs/refget.html#checksum-calculation
                 .encode("ascii")
             )
 
