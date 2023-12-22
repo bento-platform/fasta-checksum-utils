@@ -26,12 +26,14 @@ class FastaReport:
         file_checksums: dict[ChecksumAlgorithm, str],
         file_size: int,
         sequence_checksums_and_lengths: dict[str, tuple[dict[ChecksumAlgorithm, str], int]],
+        circular_contigs: frozenset[str],
     ):
         self._fasta_path_or_uri: str = fasta_path_or_uri
         self._fai_path_or_uri: Union[str, None] = fai_path_or_uri
         self._file_checksums = file_checksums
         self._file_size: int = file_size
         self._sequence_checksums_and_lengths = sequence_checksums_and_lengths
+        self._circular_contigs: frozenset[str] = circular_contigs
 
     @property
     def fasta_path_or_uri(self) -> str:
@@ -54,8 +56,10 @@ class FastaReport:
             "contigs": [
                 {
                     "name": contig,
+                    "aliases": [],
                     **_checksum_dict(checksums),
-                    "length": length
+                    "length": length,
+                    "circular": contig in self._circular_contigs,
                 }
                 for contig, (checksums, length) in self._sequence_checksums_and_lengths.items()
             ]
@@ -103,6 +107,7 @@ def _is_http_url(x: str) -> bool:
 async def fasta_report(
     fasta_path_or_uri: Union[Path, str],
     fai_path_or_uri: Union[Path, str, None],
+    circular_contigs: frozenset[str],
     algorithms: tuple[ChecksumAlgorithm, ...],
 ) -> FastaReport:
     tmp_file_fa = None
@@ -181,4 +186,4 @@ async def fasta_report(
             os.unlink(tmp_file_fai.name)
 
     # Generate and return a final report
-    return FastaReport(fasta_str, fai_str, file_checksums, file_size, sequence_checksums_and_lengths)
+    return FastaReport(fasta_str, fai_str, file_checksums, file_size, sequence_checksums_and_lengths, circular_contigs)
