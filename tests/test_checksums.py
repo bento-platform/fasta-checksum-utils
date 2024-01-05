@@ -37,7 +37,7 @@ async def test_contig_checksums():
 
 @pytest.mark.asyncio
 async def test_fasta_report():
-    report = await fasta_report(EXAMPLE_FASTA, EXAMPLE_FAI, TESTED_ALGORITHMS)
+    report = await fasta_report(EXAMPLE_FASTA, EXAMPLE_FAI, frozenset({}), TESTED_ALGORITHMS)
 
     text_report = report.as_text_report()  # just make sure this doesn't break
     text_report_lines = text_report.split("\n")
@@ -65,7 +65,7 @@ async def test_fasta_report():
 
 @pytest.mark.asyncio
 async def test_fasta_report_http():
-    report = await fasta_report(REF_MITO_URL, None, TESTED_ALGORITHMS)
+    report = await fasta_report(REF_MITO_URL, None, frozenset({"chrM"}), TESTED_ALGORITHMS)
 
     text_report = report.as_text_report()  # just make sure this doesn't break
     text_report_lines = text_report.split("\n")
