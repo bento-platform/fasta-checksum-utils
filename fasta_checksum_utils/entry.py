@@ -24,7 +24,8 @@ async def main():
 
     args = parser.parse_args()
 
-    report = await fasta_report(args.fasta, args.fai, frozenset(args.circular_contigs), (AlgorithmMD5, AlgorithmGA4GH))
+    report = await fasta_report(
+        args.fasta, args.fai, frozenset(args.circular_contigs or set()), (AlgorithmMD5, AlgorithmGA4GH))
     if args.out_format == "bento-json":
         print(report.as_bento_json(genome_id=getattr(args, "genome_id", None)))
     else:
