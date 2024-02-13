@@ -12,7 +12,7 @@ jobs:
         python-version: [ '3.9', '3.11' ]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         name: Set up Python
         with:
           python-version: ${{ matrix.python-version }}
@@ -21,4 +21,6 @@ jobs:
       - name: Test
         run: poetry run pytest -svv --cov=fasta_checksum_utils --cov-branch
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
