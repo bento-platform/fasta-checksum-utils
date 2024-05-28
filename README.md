@@ -93,7 +93,7 @@ async def demo():
     print(all_checksums)
     # prints tuple: ("863ee5dba1da0ca3f87783782284d489", "SQ.mMg8qNej7pU84juQQWobw9JyUy09oYdd")
     
-    # calculate an MD5 and TRUNC512 checksum for a specific contig in a PySAM FASTA file:
+    # calculate an MD5 and GA4GH checksum for a specific contig in a PySAM FASTA file:
     fh = pysam.FastaFile(str(covid_genome))
     try:
         contig_checksums: tuple[str, ...] = await fc.checksum_contig(
