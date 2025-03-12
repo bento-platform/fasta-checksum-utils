@@ -12,17 +12,18 @@ fasta-checksum-utils = "fasta_checksum_utils.entry:entry"
 
 [tool.poetry.dependencies]
 python = "^3.9.1"
-pysam = "^0.22.0"
+pysam = ">=0.22.0,<0.24"
 aiofiles = ">=23.2.1,<25"
 aiohttp = "^3.9.3"
 
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.4.4"
-pytest-cov = "^4.0.0"
+pytest = "^8.3.5"
+pytest-cov = "^6.0.0"
 coverage = "^7.4.1"
-pytest-asyncio = "^0.23.5"
+pytest-asyncio = "^0.25.3"
 idna = "^3.4"
+ruff = "^0.9.10"
 
 [build-system]
 requires = ["poetry-core"]
