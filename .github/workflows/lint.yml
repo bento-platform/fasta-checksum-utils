@@ -1,0 +1,19 @@
+name: Lint
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pip install poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Format check
+        run: poetry run ruff format --check
+      - name: Lint check
+        run: poetry run ruff check
