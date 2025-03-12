@@ -62,7 +62,6 @@ class ChecksumAlgorithm(type):
 
 
 class AlgorithmMD5(metaclass=ChecksumAlgorithm, algorithm_name="md5"):
-
     @classmethod
     async def checksum_file(cls, file: Union[Path, str], chunk_size: int = DEFAULT_CHUNK_SIZE, **_kwargs) -> str:
         return (await ChecksumAlgorithm.update_hash_from_file(hashlib.md5(), file, chunk_size)).hexdigest()
@@ -73,7 +72,6 @@ class AlgorithmMD5(metaclass=ChecksumAlgorithm, algorithm_name="md5"):
 
 
 class AlgorithmGA4GH(metaclass=ChecksumAlgorithm, algorithm_name="ga4gh"):
-
     @staticmethod
     def _ga4gh_of_hash(h, offset: int) -> str:
         b64_enc = base64.urlsafe_b64encode(h.digest()[:offset]).decode("ascii")

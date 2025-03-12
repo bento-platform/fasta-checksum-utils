@@ -18,7 +18,6 @@ DOWNLOAD_CHUNK_SIZE = 128 * 1024  # 128 KB
 
 
 class FastaReport:
-
     def __init__(
         self,
         fasta_path_or_uri: str,
@@ -47,23 +46,29 @@ class FastaReport:
         def _checksum_dict(cs: dict[ChecksumAlgorithm, str]) -> dict[str, str]:
             return {str(algorithm).lower(): checksum for algorithm, checksum in cs.items()}
 
-        return json.dumps({
-            **({"id": genome_id} if genome_id else {}),
-            "fasta": self.fasta_path_or_uri,
-            "fasta_size": self._file_size,
-            **({"fai": self.fai_path_or_uri} if self.fai_path_or_uri else {}),
-            **_checksum_dict(self._file_checksums),
-            "contigs": [
-                {
-                    "name": contig,
-                    "aliases": [],
-                    **_checksum_dict(checksums),
-                    "length": length,
-                    "circular": contig in self._circular_contigs,
-                }
-                for contig, (checksums, length) in self._sequence_checksums_and_lengths.items()
-            ]
-        }, indent=2)
+        return json.dumps(
+            {
+                **({"id": genome_id} if genome_id else {}),
+                "fasta": self.fasta_path_or_uri,
+                "fasta_size": self._file_size,
+                **({"fai": self.fai_path_or_uri} if self.fai_path_or_uri else {}),
+                **_checksum_dict(self._file_checksums),
+                "contigs": [
+                    {
+                        "name": contig,
+                        "aliases": [],
+                        **_checksum_dict(checksums),
+                        "length": length,
+                        "circular": contig in self._circular_contigs,
+                    }
+                    for contig, (
+                        checksums,
+                        length,
+                    ) in self._sequence_checksums_and_lengths.items()
+                ],
+            },
+            indent=2,
+        )
 
     def as_text_report(self) -> str:
         text_report = ""
@@ -73,7 +78,10 @@ class FastaReport:
             text_report += f"\t{algorithm}\t{checksum}"
         text_report += "\n"
 
-        for sequence_name, (checksums, length) in self._sequence_checksums_and_lengths.items():
+        for sequence_name, (
+            checksums,
+            length,
+        ) in self._sequence_checksums_and_lengths.items():
             text_report += f"{sequence_name}\t{length}"
             for algorithm, checksum in checksums.items():
                 text_report += f"\t{algorithm}\t{checksum}"
@@ -90,10 +98,13 @@ async def _get_fasta_sequence_checksums_and_lengths(
 
     for sequence_name in fh.references:
         sequence_checksums_and_lengths[sequence_name] = (
-            {a: c for a, c in zip(
-                algorithms,
-                await checksum_contig(fh, sequence_name, algorithms),
-            )},
+            {
+                a: c
+                for a, c in zip(
+                    algorithms,
+                    await checksum_contig(fh, sequence_name, algorithms),
+                )
+            },
             fh.get_reference_length(sequence_name),
         )
 
@@ -128,28 +139,34 @@ async def fasta_report(
                     file_size = res.headers["content-length"]
 
                 # Download FASTA file from URL
-                async with session.get(fasta_path_or_uri, allow_redirects=True) as res, \
-                        aiofiles.open(tmp_file_fa.name, "wb") as tfh:
+                async with (
+                    session.get(fasta_path_or_uri, allow_redirects=True) as res,
+                    aiofiles.open(tmp_file_fa.name, "wb") as tfh,
+                ):
                     async for data in res.content.iter_chunked(DOWNLOAD_CHUNK_SIZE):
                         await tfh.write(data)
 
                 # If a FASTA URL is passed, assume if we have a FAI it is also a URL
                 if fai_path_or_uri:
-                    async with session.get(fai_path_or_uri, allow_redirects=True) as res, \
-                            aiofiles.open(tmp_file_fai.name, "wb") as tfh:
+                    async with (
+                        session.get(fai_path_or_uri, allow_redirects=True) as res,
+                        aiofiles.open(tmp_file_fai.name, "wb") as tfh,
+                    ):
                         async for data in res.content.iter_chunked(DOWNLOAD_CHUNK_SIZE):
                             await tfh.write(data)
 
                 try:
-                    pysam.FastaFile(tmp_file_fa.name, filepath_index=tmp_file_fai.name if tmp_file_fai else None)
+                    pysam.FastaFile(
+                        tmp_file_fa.name,
+                        filepath_index=tmp_file_fai.name if tmp_file_fai else None,
+                    )
                 except OSError as e:
                     if "error when opening file" not in str(e):  # pragma: no cover
                         raise e
 
                     # Assuming this is a non-bgzipped FASTA if an OSError occurs with this string
                     with tempfile.NamedTemporaryFile() as tf:
-                        p = await asyncio.create_subprocess_exec(
-                            "gunzip", "-c", tmp_file_fa.name, stdout=tf)
+                        p = await asyncio.create_subprocess_exec("gunzip", "-c", tmp_file_fa.name, stdout=tf)
 
                         r = await p.wait()
                         if r != 0:  # pragma: no cover
@@ -174,8 +191,9 @@ async def fasta_report(
 
         fh = pysam.FastaFile(fasta_true_path, filepath_index=fai_true_path)
         try:
-            sequence_checksums_and_lengths: dict[str, tuple[dict[ChecksumAlgorithm, str], int]] = (
-                await _get_fasta_sequence_checksums_and_lengths(fh, algorithms))
+            sequence_checksums_and_lengths: dict[
+                str, tuple[dict[ChecksumAlgorithm, str], int]
+            ] = await _get_fasta_sequence_checksums_and_lengths(fh, algorithms)
         finally:
             fh.close()
 
@@ -186,4 +204,11 @@ async def fasta_report(
             os.unlink(tmp_file_fai.name)
 
     # Generate and return a final report
-    return FastaReport(fasta_str, fai_str, file_checksums, file_size, sequence_checksums_and_lengths, circular_contigs)
+    return FastaReport(
+        fasta_str,
+        fai_str,
+        file_checksums,
+        file_size,
+        sequence_checksums_and_lengths,
+        circular_contigs,
+    )

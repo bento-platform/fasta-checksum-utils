@@ -6,11 +6,9 @@ from ._file import checksum_file
 __all__ = [
     # props
     "__version__",
-
     # submodules
     "algorithms",
     "fasta",
-
     # module methods
     "checksum_contig",
     "checksum_file",
