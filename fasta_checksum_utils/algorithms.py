@@ -3,7 +3,7 @@ import base64
 import hashlib
 from abc import abstractmethod
 from pathlib import Path
-from typing import Generator, Union
+from typing import Generator
 
 __all__ = [
     "ChecksumAlgorithm",
@@ -33,7 +33,7 @@ class ChecksumAlgorithm(type):
         return self.algorithm_name
 
     @staticmethod
-    async def update_hash_from_file(h, file: Union[Path, str], chunk_size: int):
+    async def update_hash_from_file(h, file: Path | str, chunk_size: int):
         async with aiofiles.open(file, "rb") as fh:
             while data := (await fh.read(chunk_size)):
                 h.update(data)
@@ -49,7 +49,7 @@ class ChecksumAlgorithm(type):
     @abstractmethod
     async def checksum_file(
         mcs,
-        file: Union[Path, str],
+        file: Path | str,
         chunk_size: int = DEFAULT_CHUNK_SIZE,
         **kwargs,
     ) -> str:  # pragma: no cover
@@ -63,7 +63,7 @@ class ChecksumAlgorithm(type):
 
 class AlgorithmMD5(metaclass=ChecksumAlgorithm, algorithm_name="md5"):
     @classmethod
-    async def checksum_file(cls, file: Union[Path, str], chunk_size: int = DEFAULT_CHUNK_SIZE, **_kwargs) -> str:
+    async def checksum_file(cls, file: Path | str, chunk_size: int = DEFAULT_CHUNK_SIZE, **_kwargs) -> str:
         return (await ChecksumAlgorithm.update_hash_from_file(hashlib.md5(), file, chunk_size)).hexdigest()
 
     @classmethod
@@ -78,7 +78,7 @@ class AlgorithmGA4GH(metaclass=ChecksumAlgorithm, algorithm_name="ga4gh"):
         return f"SQ.{b64_enc}"
 
     @classmethod
-    async def checksum_file(cls, file: Union[Path, str], chunk_size: int = DEFAULT_CHUNK_SIZE, **kwargs):
+    async def checksum_file(cls, file: Path | str, chunk_size: int = DEFAULT_CHUNK_SIZE, **kwargs):
         return cls._ga4gh_of_hash(
             h=await cls.update_hash_from_file(hashlib.sha512(), file, chunk_size),
             offset=kwargs.pop("offset", DEFAULT_GA4GH_OFFSET),

@@ -7,7 +7,6 @@ import pysam
 import tempfile
 
 from pathlib import Path
-from typing import Union
 
 from .algorithms import ChecksumAlgorithm
 from ._contig import checksum_contig
@@ -21,14 +20,14 @@ class FastaReport:
     def __init__(
         self,
         fasta_path_or_uri: str,
-        fai_path_or_uri: Union[str, None],
+        fai_path_or_uri: str | None,
         file_checksums: dict[ChecksumAlgorithm, str],
         file_size: int,
         sequence_checksums_and_lengths: dict[str, tuple[dict[ChecksumAlgorithm, str], int]],
         circular_contigs: frozenset[str],
     ):
         self._fasta_path_or_uri: str = fasta_path_or_uri
-        self._fai_path_or_uri: Union[str, None] = fai_path_or_uri
+        self._fai_path_or_uri: str | None = fai_path_or_uri
         self._file_checksums = file_checksums
         self._file_size: int = file_size
         self._sequence_checksums_and_lengths = sequence_checksums_and_lengths
@@ -39,10 +38,10 @@ class FastaReport:
         return self._fasta_path_or_uri
 
     @property
-    def fai_path_or_uri(self) -> Union[str, None]:
+    def fai_path_or_uri(self) -> str | None:
         return self._fai_path_or_uri
 
-    def as_bento_json(self, genome_id: Union[str, None] = None) -> str:
+    def as_bento_json(self, genome_id: str | None = None) -> str:
         def _checksum_dict(cs: dict[ChecksumAlgorithm, str]) -> dict[str, str]:
             return {str(algorithm).lower(): checksum for algorithm, checksum in cs.items()}
 
@@ -116,8 +115,8 @@ def _is_http_url(x: str) -> bool:
 
 
 async def fasta_report(
-    fasta_path_or_uri: Union[Path, str],
-    fai_path_or_uri: Union[Path, str, None],
+    fasta_path_or_uri: Path | str,
+    fai_path_or_uri: Path | str | None,
     circular_contigs: frozenset[str],
     algorithms: tuple[ChecksumAlgorithm, ...],
 ) -> FastaReport:
@@ -136,7 +135,7 @@ async def fasta_report(
             tmp_file_fai = tempfile.NamedTemporaryFile(delete=False) if fai_path_or_uri else None
             async with aiohttp.ClientSession() as session:
                 async with session.head(fasta_path_or_uri, allow_redirects=True) as res:
-                    file_size = res.headers["content-length"]
+                    file_size = int(res.headers["content-length"])
 
                 # Download FASTA file from URL
                 async with (
