@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fasta-checksum-utils"
-version = "0.5.1"
+version = "0.5.2"
 description = "Library and command-line utility for checksumming FASTA files and individual contigs."
 authors = ["David Lougheed <david.lougheed@gmail.com>"]
 license = "LGPL-3.0"
@@ -11,7 +11,7 @@ packages = [{include = "fasta_checksum_utils"}]
 fasta-checksum-utils = "fasta_checksum_utils.entry:entry"
 
 [tool.poetry.dependencies]
-python = ">=3.10.0,<3.14"
+python = ">=3.10.0,<3.15"
 pysam = ">=0.22.0,<0.25"
 aiofiles = ">=23.2.1,<26"
 aiohttp = "^3.9.3"
