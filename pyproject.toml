@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fasta-checksum-utils"
-version = "0.5.2"
+version = "0.5.3"
 description = "Library and command-line utility for checksumming FASTA files and individual contigs."
 authors = ["David Lougheed <david.lougheed@gmail.com>"]
 license = "LGPL-3.0"
@@ -23,8 +23,8 @@ pytest-cov = "^7.0.0"
 coverage = "^7.4.1"
 pytest-asyncio = "^1.2.0"
 idna = "^3.4"
-ruff = "^0.15.0"
-mypy = "^2.1.0"
+ruff = "^0.17.2"
+mypy = "^2.3.0"
 types-aiofiles = "^25.1.0.20251011"
 
 [build-system]
@@ -33,3 +33,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
+ignore = ["RUF022"]

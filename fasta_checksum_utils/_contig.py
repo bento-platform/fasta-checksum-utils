@@ -1,8 +1,9 @@
 import asyncio
-import pysam
-from typing import Generator
-from .algorithms import ChecksumAlgorithm
+from collections.abc import Generator
 
+import pysam
+
+from .algorithms import ChecksumAlgorithm
 
 __all__ = [
     "SEQUENCE_CHUNK_SIZE",

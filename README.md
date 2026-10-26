@@ -80,25 +80,25 @@ from pathlib import Path
 
 async def demo():
     covid_genome: Path = Path("./sars_cov_2.fa")
-    
+
     # calculate an MD5 checksum for a whole file
     file_checksum: str = await fc.algorithms.AlgorithmMD5.checksum_file(covid_genome)
     print(file_checksum)
     # prints "863ee5dba1da0ca3f87783782284d489"
-    
+
     all_algorithms = (fc.algorithms.AlgorithmMD5, fc.algorithms.AlgorithmGA4GH)
-    
+
     # calculate multiple checksums for a whole file
     all_checksums: tuple[str, ...] = await fc.checksum_file(file=covid_genome, algorithms=all_algorithms)
     print(all_checksums)
     # prints tuple: ("863ee5dba1da0ca3f87783782284d489", "SQ.mMg8qNej7pU84juQQWobw9JyUy09oYdd")
-    
+
     # calculate an MD5 and GA4GH checksum for a specific contig in a PySAM FASTA file:
     fh = pysam.FastaFile(str(covid_genome))
     try:
         contig_checksums: tuple[str, ...] = await fc.checksum_contig(
-            fh=fh, 
-            contig_name="NC_045512.2", 
+            fh=fh,
+            contig_name="NC_045512.2",
             algorithms=all_algorithms,
         )
         print(contig_checksums)

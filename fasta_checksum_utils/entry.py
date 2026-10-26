@@ -2,7 +2,7 @@ import argparse
 import asyncio
 
 from . import __version__
-from .algorithms import AlgorithmMD5, AlgorithmGA4GH
+from .algorithms import AlgorithmGA4GH, AlgorithmMD5
 from .fasta import fasta_report
 
 

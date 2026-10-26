@@ -1,11 +1,12 @@
 import json
 import pathlib
+
 import pysam
 import pytest
-from fasta_checksum_utils import checksum_file, checksum_contig
-from fasta_checksum_utils.algorithms import AlgorithmMD5, AlgorithmGA4GH
-from fasta_checksum_utils.fasta import fasta_report
 
+from fasta_checksum_utils import checksum_contig, checksum_file
+from fasta_checksum_utils.algorithms import AlgorithmGA4GH, AlgorithmMD5
+from fasta_checksum_utils.fasta import fasta_report
 
 EXAMPLE_FASTA = pathlib.Path(__file__).parent / "data" / "example.fa"
 EXAMPLE_FAI = pathlib.Path(__file__).parent / "data" / "example.fa.fai"

@@ -1,9 +1,10 @@
-import aiofiles
 import base64
 import hashlib
 from abc import abstractmethod
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
+
+import aiofiles
 
 __all__ = [
     "ChecksumAlgorithm",

@@ -1,4 +1,5 @@
 from importlib import metadata
+
 from . import algorithms, fasta
 from ._contig import checksum_contig
 from ._file import checksum_file
