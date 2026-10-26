@@ -1,19 +1,24 @@
-import aiofiles
-import aiohttp
 import asyncio
 import json
 import os
-import pysam
 import tempfile
-
 from pathlib import Path
 
-from .algorithms import ChecksumAlgorithm
+import aiofiles
+import aiohttp
+import pysam
+
 from ._contig import checksum_contig
 from ._file import checksum_file
-
+from .algorithms import ChecksumAlgorithm
 
 DOWNLOAD_CHUNK_SIZE = 128 * 1024  # 128 KB
+
+
+class FastaException(Exception):
+    """
+    An exception class for errors while downloading/extracting FASTA files.
+    """
 
 
 class FastaReport:
@@ -111,7 +116,8 @@ async def _get_fasta_sequence_checksums_and_lengths(
 
 
 def _is_http_url(x: str) -> bool:
-    return x.startswith("http://") or x.startswith("https://")
+    # noinspection HttpUrlsUsage
+    return x.startswith(("http://", "https://"))
 
 
 async def fasta_report(
@@ -131,8 +137,8 @@ async def fasta_report(
         if isinstance(fasta_path_or_uri, Path) or not _is_http_url(fasta_path_or_uri):
             file_size = Path(fasta_path_or_uri).stat().st_size
         else:
-            tmp_file_fa = tempfile.NamedTemporaryFile(delete=False)
-            tmp_file_fai = tempfile.NamedTemporaryFile(delete=False) if fai_path_or_uri else None
+            tmp_file_fa = tempfile.NamedTemporaryFile(delete=False)  # noqa: SIM115
+            tmp_file_fai = tempfile.NamedTemporaryFile(delete=False) if fai_path_or_uri else None  # noqa: SIM115
             async with aiohttp.ClientSession() as session:
                 async with session.head(fasta_path_or_uri, allow_redirects=True) as res:
                     file_size = int(res.headers["content-length"])
@@ -161,7 +167,7 @@ async def fasta_report(
                     )
                 except OSError as e:
                     if "error when opening file" not in str(e):  # pragma: no cover
-                        raise e
+                        raise
 
                     # Assuming this is a non-bgzipped FASTA if an OSError occurs with this string
                     with tempfile.NamedTemporaryFile() as tf:
@@ -169,9 +175,9 @@ async def fasta_report(
 
                         r = await p.wait()
                         if r != 0:  # pragma: no cover
-                            raise Exception("Error while gunzipping downloaded FASTA")
+                            raise FastaException("Error while gunzipping downloaded FASTA")
 
-                        with open(tmp_file_fa.name, "wb") as tfh:
+                        async with aiofiles.open(tmp_file_fa.name, "wb") as tfh:
                             p = await asyncio.create_subprocess_exec("cat", tf.name, stdout=tfh)
                             await p.wait()
 
