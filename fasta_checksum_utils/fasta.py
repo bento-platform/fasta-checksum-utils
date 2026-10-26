@@ -15,6 +15,12 @@ from .algorithms import ChecksumAlgorithm
 DOWNLOAD_CHUNK_SIZE = 128 * 1024  # 128 KB
 
 
+class FastaException(Exception):
+    """
+    An exception class for errors while downloading/extracting FASTA files.
+    """
+
+
 class FastaReport:
     def __init__(
         self,
@@ -169,7 +175,7 @@ async def fasta_report(
 
                         r = await p.wait()
                         if r != 0:  # pragma: no cover
-                            raise Exception("Error while gunzipping downloaded FASTA")
+                            raise FastaException("Error while gunzipping downloaded FASTA")
 
                         async with aiofiles.open(tmp_file_fa.name, "wb") as tfh:
                             p = await asyncio.create_subprocess_exec("cat", tf.name, stdout=tfh)
